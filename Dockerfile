@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --production=false
 
 # Copy source
 COPY . .
@@ -15,7 +15,11 @@ COPY . .
 RUN npm run build
 
 # Verify dist was created
-RUN ls -la dist || (echo "ERROR: dist folder not created after build" && exit 1)
+RUN if [ ! -d "dist" ]; then echo "ERROR: dist folder not created!" && exit 1; fi
+RUN ls -la dist/
+
+# Make start script executable
+RUN chmod +x start.sh 2>/dev/null || true
 
 # Expose port
 EXPOSE 3000
@@ -24,6 +28,10 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
 # Start with detailed logging
 CMD ["node", "server.js"]
