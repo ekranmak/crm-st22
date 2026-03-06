@@ -6,10 +6,6 @@
   "deploy": {
     "numReplicas": 1,
     "restartPolicyMaxRetries": 5,
-    "restartPolicyWindowMs": 60000,
-    "healthchecks": {
-      "cpuThreshold": 80,
-      "memoryThreshold": 80
-    }
+    "restartPolicyWindowMs": 60000
   }
 }
