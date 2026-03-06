@@ -20,6 +20,7 @@ import SettingsPage from "./pages/Settings";
 import Finance from "./pages/Finance";
 import Orders from "./pages/Orders";
 import Sites from "./pages/Sites";
+import WebLeads from "./pages/WebLeads";
 import AuthPage from "./pages/Auth";
 import MessagesPage from "./pages/Messages";
 import NotFound from "./pages/NotFound";
@@ -60,6 +61,7 @@ function AppRoutes() {
       <Route path="/finance" element={<ProtectedRoute allowedRoles={["admin"]}><Finance /></ProtectedRoute>} />
       <Route path="/orders" element={<ProtectedRoute allowedRoles={["admin", "manager"]}><Orders /></ProtectedRoute>} />
       <Route path="/sites" element={<ProtectedRoute allowedRoles={["admin"]}><Sites /></ProtectedRoute>} />
+      <Route path="/web-leads" element={<ProtectedRoute allowedRoles={["admin", "manager"]}><WebLeads /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="/messages" element={<ProtectedRoute allowedRoles={["admin", "manager"]}><MessagesPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />

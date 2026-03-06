@@ -4,11 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Globe, Plus, X, ExternalLink, Trash2, CheckCircle2, AlertCircle,
   Clock, Search, Link2, FileText, Shield, Smartphone,
-  RefreshCw, Eye, TrendingUp, Zap, Loader2,
+  RefreshCw, Eye, TrendingUp, Zap, Loader2, Inbox,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { WebhookIntegration } from "@/components/WebhookIntegration";
 
 interface Site {
   id: string;
@@ -22,6 +23,8 @@ interface Site {
   uptime: number;
   speed: number;
   visitors: number;
+  webhook_token?: string;
+  webhook_enabled?: boolean;
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: typeof CheckCircle2 }> = {
@@ -55,13 +58,15 @@ export default function Sites() {
 
   const fetchSites = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("sites").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("sites").select("*").eq("owner_id", user.id).order("created_at", { ascending: false });
     if (data) {
       setSites(data.map(s => ({
         id: s.id, url: s.url, name: s.name, status: s.status,
         ssl: s.ssl, mobile: s.mobile, pages: s.pages,
         uptime: Number(s.uptime), speed: s.speed, visitors: s.visitors,
         lastCheck: formatLastCheck(s.last_check),
+        webhook_token: s.webhook_token,
+        webhook_enabled: s.webhook_enabled,
       })));
     }
     setLoading(false);
@@ -105,6 +110,25 @@ export default function Sites() {
     await supabase.from("sites").update({ status: "active", last_check: new Date().toISOString() }).eq("id", id);
     setTimeout(() => fetchSites(), 1000);
     toast({ title: "Проверка завершена" });
+  };
+
+  const toggleWebhook = async (id: string, enabled: boolean) => {
+    let token = sites.find(s => s.id === id)?.webhook_token;
+    
+    // Generate new token if enabling and no token exists
+    if (enabled && !token) {
+      token = `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+    }
+
+    const { error } = await supabase.from("sites").update({ 
+      webhook_enabled: enabled,
+      webhook_token: token 
+    }).eq("id", id);
+
+    if (!error) {
+      setSites(p => p.map(s => s.id === id ? { ...s, webhook_enabled: enabled, webhook_token: token } : s));
+      toast({ title: enabled ? "Webhook включен" : "Webhook отключен" });
+    }
   };
 
   const totalVisitors = sites.reduce((a, s) => a + s.visitors, 0);
@@ -283,6 +307,17 @@ export default function Sites() {
                             </button>
                           </div>
                         </div>
+
+                        {/* Web Leads Webhook Integration */}
+                        <WebhookIntegration
+                          siteId={site.id}
+                          webhookToken={site.webhook_token || ""}
+                          webhookEnabled={site.webhook_enabled || false}
+                          supabaseUrl={import.meta.env.VITE_SUPABASE_URL}
+                          onToggle={(enabled) => {
+                            toggleWebhook(site.id, enabled);
+                          }}
+                        />
                       </div>
                     </motion.div>
                   )}

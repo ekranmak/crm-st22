@@ -19,7 +19,7 @@ import {
 import {
   CalendarDays, Package, FolderKanban, CreditCard, FileText,
   Phone, Mail, BarChart3, Settings, LayoutDashboard, GitBranch,
-  Wallet, ShoppingCart, ChevronDown, Globe, User, Bot,
+  Wallet, ShoppingCart, ChevronDown, Globe, User, Bot, Inbox,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -47,6 +47,7 @@ const navItems: NavItem[] = [
   { title: "Потоки данных", url: "/data-flows", icon: GitBranch, roles: ["admin"] },
   { title: "Аналитика", url: "/analytics", icon: BarChart3, roles: ["admin", "observer"] },
   { title: "Сайты", url: "/sites", icon: Globe, roles: ["admin"] },
+  { title: "Web Заявки", url: "/web-leads", icon: Inbox, roles: ["admin", "manager"] },
   
 ];
 
